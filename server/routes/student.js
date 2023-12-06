@@ -5,6 +5,7 @@ import {
   validateAddStudentData,
   validateUpdateStudentData,
 } from "../util/student.js";
+import validateDbConnection from "../middleware/validate-db-connection.js";
 
 const router = express.Router();
 
@@ -13,22 +14,36 @@ const router = express.Router();
 //
 
 // Make sure there is an active databse connection
-router.use((req, res, next) => {
-  if (!req.app.locals.db || !req.app.locals.db.connected) {
-    res.status(500);
-    throw new Error("DATABASE CONNECTION ERROR");
-  }
-
-  next();
-});
+router.use(validateDbConnection);
 
 //
 // ROUTES
 //
 
 // Get student by id
-router.get("/:id", (req, res) => {
-  res.send(req.params.id);
+router.get("/:StudentID", async(req, res) => {
+  try {
+    console.log("Gettings student...")
+
+    // Validate get student StudentID
+    if(Number.parseInt(req.params.StudentID) === NaN) {
+      throw new Error("INVALID REQUEST DATA")
+    }
+
+    // Create new database request
+    const dbReq = new mssql.Request(req.app.locals.db)
+
+    // Set request input params
+    dbReq.input("StudentID", mssql.Int, req.params.StudentID)
+
+    // Send select query
+    const dbRes = await dbReq.query("SELECT * FROM Student WHERE StudentID = @StudentID")
+
+    console.log("Got student")
+    res.send(dbRes.recordset[0])
+  } catch (e) {
+    throw e
+  }
 });
 
 // Add new student
@@ -55,7 +70,7 @@ router.post("/addStudent", async (req, res) => {
       "INSERT INTO Student (FirstName, LastName, DateOfBirth, MajorID) VALUES(@FirstName, @LastName, @DateOfBirth, @MajorID)"
     );
 
-    console.log(`Student added (${dbRes.rowsAffected} rows affected)`);
+    console.log(`Added student (${dbRes.rowsAffected} rows affected)`);
     res.sendStatus(200);
   } catch (e) {
     throw e;
@@ -129,7 +144,7 @@ router.post("/updateStudent", async(req, res) => {
     // Send update query
     const dbRes = await dbReq.query(queryString)
 
-    console.log(`Student updated (${dbRes.rowsAffected} rows affected)`)
+    console.log(`Updated student (${dbRes.rowsAffected} rows affected)`)
     res.sendStatus(200)
   } catch (e) {
     throw e;
