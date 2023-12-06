@@ -66,6 +66,37 @@ router.post("/listStudents", async (req, res) => {
   }
 });
 
+// Get enrollment list of a student by their ID
+router.post("/getStudentEnrollment", async (req, res) => {
+  try {
+    console.log("Getting student enrollment...")
+
+    // Validate get student enrollment StudentID
+    if (Number.parseInt(req.body.StudentID) === NaN) {
+      throw new Error("INVALID REQUEST DATA");
+    }
+
+    // Create new database request
+    const dbReq = new mssql.Request(req.app.locals.db);
+
+    // Set request input params
+    dbReq.input("StudentID", mssql.Int, req.body.StudentID)
+
+    // Send select query.
+    const dbRes = await dbReq.query(`
+      SELECT * FROM Enrollment
+      INNER JOIN Course 
+      ON Enrollment.CourseID = Course.CourseID
+      AND Enrollment.StudentID = @StudentID;
+    `);
+
+    console.log(`Got student enrollment (${dbRes.recordset.length} rows selected)`);
+    res.send(dbRes.recordset);
+  } catch (e) {
+    throw e
+  }
+})
+
 // Add new student
 router.post("/addStudent", async (req, res) => {
   try {
