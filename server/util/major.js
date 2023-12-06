@@ -41,12 +41,10 @@ export function validateUpdateMajorData(data) {
 }
 
 /**
- * Mssql types for updateStudent data
+ * Mssql types for updateMajor data
  */
-export const updateStudentTypes = {
-    StudentID: mssql.Int, 
-    FirstName: mssql.VarChar(50), 
-    LastName: mssql.VarChar(50), 
-    DateOfBirth: mssql.Date, 
-    MajorID: mssql.Int
+export const updateMajorTypes = {
+    MajorID: mssql.Int, 
+    MajorName: mssql.VarChar(50), 
+    MajorDescription: mssql.VarChar(3000),
 }

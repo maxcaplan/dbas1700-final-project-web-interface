@@ -1,7 +1,7 @@
 import express from "express";
 import mssql from "mssql";
 import validateDbConnection from "../middleware/validate-db-connection.js";
-import { validateAddMajorData } from "../util/major.js";
+import { updateMajorTypes, validateAddMajorData, validateUpdateMajorData } from "../util/major.js";
 
 const router = express.Router();
 
@@ -122,42 +122,42 @@ router.post("/updateMajor", async(req, res) => {
   try {
     console.log("Updating major...")
 
-    // // Validate update student data
-    // if(!validateUpdateStudentData(req.body)) {
-    //   throw new Error("INVALID REQUEST DATA")
-    // }
+    // Validate update student data
+    if(!validateUpdateMajorData(req.body)) {
+      throw new Error("INVALID REQUEST DATA")
+    }
 
-    // // Create new database request
-    // const dbReq = new mssql.Request(req.app.locals.db);
+    // Create new database request
+    const dbReq = new mssql.Request(req.app.locals.db);
 
-    // // Deconstruct request body to only update fields
-    // const { FirstName, LastName, DateOfBirth, MajorID } = req.body
-    // const updateData = { FirstName, LastName, DateOfBirth, MajorID }
+    // Deconstruct request body to only update fields
+    const { MajorName, MajorDescription, } = req.body
+    const updateData = { MajorName, MajorDescription }
 
-    // let values = []
+    let values = []
     
-    // // Loop over all update fields
-    // for (const [key, value] of Object.entries(updateData)) {
-    //   // Skip key if value is not set
-    //   if(value === undefined) continue
+    // Loop over all update fields
+    for (const [key, value] of Object.entries(updateData)) {
+      // Skip key if value is not set
+      if(value === undefined) continue
 
-    //   // Add request input param
-    //   dbReq.input(key, updateStudentTypes[key], value)
+      // Add request input param
+      dbReq.input(key, updateMajorTypes[key], value)
 
-    //   // Add update value to values arr
-    //   values.push(`${key} = @${key}`)
-    // }
+      // Add update value to values arr
+      values.push(`${key} = @${key}`)
+    }
 
-    // // Set StudentID input param
-    // dbReq.input("StudentID", mssql.Int, req.body.StudentID)
+    // Set StudentID input param
+    dbReq.input("MajorID", mssql.Int, req.body.MajorID)
 
-    // // Construct query string from values array
-    // const queryString = `UPDATE Student SET ${values.toString()} WHERE StudentID = @StudentID`
+    // Construct query string from values array
+    const queryString = `UPDATE Major SET ${values.toString()} WHERE MajorID = @MajorID`
 
-    // // Send update query
-    // const dbRes = await dbReq.query(queryString)
+    // Send update query
+    const dbRes = await dbReq.query(queryString)
 
-    // console.log(`Updated major (${dbRes.rowsAffected} rows affected)`)
+    console.log(`Updated major (${dbRes.rowsAffected} rows affected)`)
     res.sendStatus(200)
   } catch (e) {
     throw e;
