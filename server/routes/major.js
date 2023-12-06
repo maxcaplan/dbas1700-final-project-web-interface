@@ -1,6 +1,7 @@
 import express from "express";
 import mssql from "mssql";
 import validateDbConnection from "../middleware/validate-db-connection.js";
+import { validateAddMajorData } from "../util/major.js";
 
 const router = express.Router();
 
@@ -16,12 +17,12 @@ router.use(validateDbConnection);
 //
 
 // Get major by id
-router.get("/:MajorID", async(req, res) => {
+router.post("/getMajor", async(req, res) => {
   try {
     console.log("Gettings major...")
 
     // Validate get student StudentID
-    if(Number.parseInt(req.params.MajorID) === NaN) {
+    if(Number.parseInt(req.body.MajorID) === NaN) {
       throw new Error("INVALID REQUEST DATA")
     }
 
@@ -29,7 +30,7 @@ router.get("/:MajorID", async(req, res) => {
     const dbReq = new mssql.Request(req.app.locals.db)
 
     // Set request input params
-    dbReq.input("MajorID", mssql.Int, req.params.MajorID)
+    dbReq.input("MajorID", mssql.Int, req.body.MajorID)
 
     // Send select query
     const dbRes = await dbReq.query("SELECT * FROM Major WHERE MajorID = @MajorID")
@@ -41,31 +42,47 @@ router.get("/:MajorID", async(req, res) => {
   }
 });
 
+// Get all majors
+router.post("/listMajors", async (req, res) => {
+  try {
+    console.log("Getting all majors...");
+
+    // Create new database request
+    const dbReq = new mssql.Request(req.app.locals.db);
+
+    // Send select query
+    const dbRes = await dbReq.query("SELECT * FROM Major")
+
+    console.log(`Got all majors (${dbRes.recordset.length} rows selected)`)
+    res.send(dbRes.recordset)
+  } catch (e) {
+    throw e;
+  }
+});
+
 // Add new major
 router.post("/addMajor", async (req, res) => {
   try {
     console.log("Adding major...");
 
-    // // Validate new student data
-    // if (!validateAddStudentData(req.body)) {
-    //   throw new Error("INVALID REQUEST DATA");
-    // }
+    // Validate new major data
+    if (!validateAddMajorData(req.body)) {
+      throw new Error("INVALID REQUEST DATA");
+    }
 
-    // // Create new database request
-    // const dbReq = new mssql.Request(req.app.locals.db);
+    // Create new database request
+    const dbReq = new mssql.Request(req.app.locals.db);
 
-    // // Set request input params
-    // dbReq.input("FirstName", mssql.VarChar(50), req.body.FirstName);
-    // dbReq.input("LastName", mssql.VarChar(50), req.body.LastName);
-    // dbReq.input("DateOfBirth", mssql.Date, req.body.DateOfBirth);
-    // dbReq.input("MajorID", mssql.Int, req.body.MajorID);
+    // Set request input params
+    dbReq.input("MajorName", mssql.VarChar(50), req.body.MajorName);
+    dbReq.input("MajorDescription", mssql.VarChar(3000), req.body.MajorDescription);
 
-    // // Send insert query
-    // const dbRes = await dbReq.query(
-    //   "INSERT INTO Student (FirstName, LastName, DateOfBirth, MajorID) VALUES(@FirstName, @LastName, @DateOfBirth, @MajorID)"
-    // );
+    // Send insert query
+    const dbRes = await dbReq.query(
+      "INSERT INTO Major (MajorName, MajorDescription) VALUES (@MajorName, @MajorDescription)"
+    );
 
-    // console.log(`Added major (${dbRes.rowsAffected} rows affected)`);
+    console.log(`Added major (${dbRes.rowsAffected} rows affected)`);
     res.sendStatus(200);
   } catch (e) {
     throw e;
@@ -77,22 +94,23 @@ router.post("/deleteMajor", async (req, res) => {
   try {
     console.log("Deleting major...");
 
-    // // Validate request StudentID
-    // if (!Number.isInteger(req.body.StudentID))
-    //   throw new Error("INVALID REQUEST DATA");
+    // Validate request MajorID
+    if (!Number.isInteger(req.body.MajorID))
+      throw new Error("INVALID REQUEST DATA");
 
-    // // Create new database request
-    // const dbReq = new mssql.Request(req.app.locals.db);
+    // Create new database request
+    const dbReq = new mssql.Request(req.app.locals.db);
 
-    // // Set request input params
-    // dbReq.input("StudentID", mssql.Int, req.body.StudentID);
+    // Set request input params
+    dbReq.input("MajorID", mssql.Int, req.body.MajorID);
 
-    // // Send delete query
-    // const dbRes = await dbReq.query(
-    //   "DELETE FROM Student WHERE StudentID=@StudentID"
-    // );
+    // Send delete query for major
+    const dbRes = await dbReq.query(
+      "DELETE FROM Major WHERE MajorID=@MajorID"
+    );
 
-    // console.log(`Deleted major (${dbRes.rowsAffected} rows affected)`);
+    console.log(`Deleted major (${dbRes.rowsAffected} rows affected)`);
+
     res.sendStatus(200);
   } catch (e) {
     throw e;

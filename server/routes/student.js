@@ -21,12 +21,12 @@ router.use(validateDbConnection);
 //
 
 // Get student by id
-router.post("/:StudentID", async (req, res) => {
+router.post("/getStudent", async (req, res) => {
   try {
     console.log("Gettings student...");
 
     // Validate get student StudentID
-    if (Number.parseInt(req.params.StudentID) === NaN) {
+    if (Number.parseInt(req.body.StudentID) === NaN) {
       throw new Error("INVALID REQUEST DATA");
     }
 
@@ -34,7 +34,7 @@ router.post("/:StudentID", async (req, res) => {
     const dbReq = new mssql.Request(req.app.locals.db);
 
     // Set request input params
-    dbReq.input("StudentID", mssql.Int, req.params.StudentID);
+    dbReq.input("StudentID", mssql.Int, req.body.StudentID);
 
     // Send select query
     const dbRes = await dbReq.query(
