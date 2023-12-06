@@ -57,10 +57,10 @@ router.post("/listStudents", async (req, res) => {
     const dbReq = new mssql.Request(req.app.locals.db);
 
     // Send select query
-    const dbRes = await dbReq.query("SELECT * FROM Student")
+    const dbRes = await dbReq.query("SELECT * FROM Student");
 
-    console.log(`Got all students (${dbRes.recordset.length} rows selected)`)
-    res.send(dbRes.recordset)
+    console.log(`Got all students (${dbRes.recordset.length} rows selected)`);
+    res.send(dbRes.recordset);
   } catch (e) {
     throw e;
   }
