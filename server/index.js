@@ -1,6 +1,7 @@
 import { config } from "dotenv";
 
 import Server from "./server.js"
+import { router as major_routes } from "./routes/major.js";
 import { router as student_routes } from "./routes/student.js";
 
 
@@ -12,6 +13,7 @@ async function main() {
   // Create new server with router
   const server = new Server();
   server.use_router(student_routes, "/student")
+  server.use_router(major_routes, "/major")
   
   // Connect to mssql database
   await server.init_db_connection(
