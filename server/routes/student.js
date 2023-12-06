@@ -21,28 +21,48 @@ router.use(validateDbConnection);
 //
 
 // Get student by id
-router.get("/:StudentID", async(req, res) => {
+router.post("/:StudentID", async (req, res) => {
   try {
-    console.log("Gettings student...")
+    console.log("Gettings student...");
 
     // Validate get student StudentID
-    if(Number.parseInt(req.params.StudentID) === NaN) {
-      throw new Error("INVALID REQUEST DATA")
+    if (Number.parseInt(req.params.StudentID) === NaN) {
+      throw new Error("INVALID REQUEST DATA");
     }
 
     // Create new database request
-    const dbReq = new mssql.Request(req.app.locals.db)
+    const dbReq = new mssql.Request(req.app.locals.db);
 
     // Set request input params
-    dbReq.input("StudentID", mssql.Int, req.params.StudentID)
+    dbReq.input("StudentID", mssql.Int, req.params.StudentID);
 
     // Send select query
-    const dbRes = await dbReq.query("SELECT * FROM Student WHERE StudentID = @StudentID")
+    const dbRes = await dbReq.query(
+      "SELECT * FROM Student WHERE StudentID = @StudentID"
+    );
 
-    console.log("Got student")
-    res.send(dbRes.recordset[0])
+    console.log("Got student");
+    res.send(dbRes.recordset[0]);
   } catch (e) {
-    throw e
+    throw e;
+  }
+});
+
+// Get all students
+router.post("/listStudents", async (req, res) => {
+  try {
+    console.log("Getting all students...");
+
+    // Create new database request
+    const dbReq = new mssql.Request(req.app.locals.db);
+
+    // Send select query
+    const dbRes = await dbReq.query("SELECT * FROM Student")
+
+    console.log(`Got all students (${dbRes.recordset.length} rows selected)`)
+    res.send(dbRes.recordset)
+  } catch (e) {
+    throw e;
   }
 });
 
@@ -105,47 +125,47 @@ router.post("/deleteStudent", async (req, res) => {
 });
 
 // Update a student by id
-router.post("/updateStudent", async(req, res) => {
+router.post("/updateStudent", async (req, res) => {
   try {
-    console.log("Updating student...")
+    console.log("Updating student...");
 
     // Validate update student data
-    if(!validateUpdateStudentData(req.body)) {
-      throw new Error("INVALID REQUEST DATA")
+    if (!validateUpdateStudentData(req.body)) {
+      throw new Error("INVALID REQUEST DATA");
     }
 
     // Create new database request
     const dbReq = new mssql.Request(req.app.locals.db);
 
     // Deconstruct request body to only update fields
-    const { FirstName, LastName, DateOfBirth, MajorID } = req.body
-    const updateData = { FirstName, LastName, DateOfBirth, MajorID }
+    const { FirstName, LastName, DateOfBirth, MajorID } = req.body;
+    const updateData = { FirstName, LastName, DateOfBirth, MajorID };
 
-    let values = []
-    
+    let values = [];
+
     // Loop over all update fields
     for (const [key, value] of Object.entries(updateData)) {
       // Skip key if value is not set
-      if(value === undefined) continue
+      if (value === undefined) continue;
 
       // Add request input param
-      dbReq.input(key, updateStudentTypes[key], value)
+      dbReq.input(key, updateStudentTypes[key], value);
 
       // Add update value to values arr
-      values.push(`${key} = @${key}`)
+      values.push(`${key} = @${key}`);
     }
 
     // Set StudentID input param
-    dbReq.input("StudentID", mssql.Int, req.body.StudentID)
+    dbReq.input("StudentID", mssql.Int, req.body.StudentID);
 
     // Construct query string from values array
-    const queryString = `UPDATE Student SET ${values.toString()} WHERE StudentID = @StudentID`
+    const queryString = `UPDATE Student SET ${values.toString()} WHERE StudentID = @StudentID`;
 
     // Send update query
-    const dbRes = await dbReq.query(queryString)
+    const dbRes = await dbReq.query(queryString);
 
-    console.log(`Updated student (${dbRes.rowsAffected} rows affected)`)
-    res.sendStatus(200)
+    console.log(`Updated student (${dbRes.rowsAffected} rows affected)`);
+    res.sendStatus(200);
   } catch (e) {
     throw e;
   }
