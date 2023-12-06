@@ -66,6 +66,41 @@ router.post("/listCourses", async (req, res) => {
   }
 });
 
+// Get enrollment list of a course by its ID
+router.post("/getCourseEnrollment", async (req, res) => {
+  try {
+    console.log("Getting course enrollment...");
+
+    // Validate get course enrollment CourseID
+    if (Number.parseInt(req.body.CourseID) === NaN) {
+      throw new Error("INVALID REQUEST DATA");
+    }
+
+    // Create new database request
+    const dbReq = new mssql.Request(req.app.locals.db);
+
+    // Set request input params
+    dbReq.input("CourseID", mssql.Int, req.body.CourseID);
+
+    // Send select query.
+    const dbRes = await dbReq.query(`
+      USE University_Management_System;
+      SELECT * 
+      FROM Enrollment
+      INNER JOIN Student 
+      ON Enrollment.StudentID = Student.StudentID
+      AND Enrollment.CourseID = @CourseID;
+    `);
+
+    console.log(
+      `Got student enrollment (${dbRes.recordset.length} rows selected)`
+    );
+    res.send(dbRes.recordset);
+  } catch (e) {
+    throw e;
+  }
+});
+
 // Add new course
 router.post("/addCourse", async (req, res) => {
   try {
