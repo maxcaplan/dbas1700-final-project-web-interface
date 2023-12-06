@@ -5,6 +5,8 @@ import { router as major_routes } from "./routes/major.js";
 import { router as student_routes } from "./routes/student.js";
 import { router as department_routes } from "./routes/department.js";
 import { router as professor_routes } from "./routes/professor.js";
+import { router as course_routes } from "./routes/course.js";
+
 
 // Load environment variables from .env
 config({ path: "../.env" });
@@ -19,6 +21,7 @@ async function main() {
   server.use_router(student_routes, "/student")
   server.use_router(department_routes, "/department")
   server.use_router(professor_routes, "/professor")
+  server.use_router(course_routes, "/course")
   
   // Connect to mssql database
   await server.init_db_connection(
