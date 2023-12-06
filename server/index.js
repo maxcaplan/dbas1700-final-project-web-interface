@@ -1,14 +1,17 @@
-const Server = require("./server");
-const db_router = require("./routes/database")
+import { config } from "dotenv";
+
+import Server from "./server.js"
+import { router as student_routes } from "./routes/student.js";
+
 
 // Load environment variables from .env
-require("dotenv").config({ path: "../.env" });
+config({ path: "../.env" });
 
 /** Main app function */
 async function main() {
   // Create new server with router
   const server = new Server();
-  server.use_router(db_router)
+  server.use_router(student_routes, "/student")
   
   // Connect to mssql database
   await server.init_db_connection(

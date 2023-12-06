@@ -1,16 +1,18 @@
-const express = require("express");
-const sql = require("mssql")
+import express from "express";
+import bodyParser from "body-parser";
+import mssql from "mssql"
 
 /**
  * Express Server wrapper
  * @class
  */
-class Server {
+export default class Server {
   constructor() {
     this.port = Server.get_port(process.argv.slice(2));
     this.address = Server.get_address(process.argv.slice(2));
 
     this.app = express();
+    this.app.use(bodyParser.json())
   }
 
   // METHODS
@@ -39,7 +41,7 @@ class Server {
       this.close_db_connection();
 
       // Instantiate a new global connection pool
-      const connectionPool = new sql.ConnectionPool({
+      const connectionPool = new mssql.ConnectionPool({
         user: user,
         password: pass,
         database: name,
@@ -138,5 +140,3 @@ class Server {
     return arg_address;
   }
 }
-
-module.exports = Server;
