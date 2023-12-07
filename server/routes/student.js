@@ -99,6 +99,83 @@ router.post("/getStudentEnrollment", async (req, res) => {
   }
 });
 
+// Enroll a student into a course
+router.post("/enrollStudent", async (req, res) => {
+  try {
+    console.log("Enrolling student...");
+
+    // Validate StudentID
+    if (Number.parseInt(req.body.StudentID) === NaN) {
+      throw new Error("INVALID REQUEST DATA");
+    }
+
+    // Validate CourseID
+    if (Number.parseInt(req.body.CourseID) === NaN) {
+      throw new Error("INVALID REQUEST DATA");
+    }
+
+    // Create new database request
+    const dbReq = new mssql.Request(req.app.locals.db);
+
+    // Set request input params
+    dbReq.input("StudentID", mssql.Int, req.body.StudentID);
+    dbReq.input("CourseID", mssql.Int, req.body.CourseID);
+    dbReq.input("CurrentDate", mssql.Date, new Date().toISOString().slice(0, 10));
+
+    // Send conditional insert query
+    const dbRes = await dbReq.query(`
+      IF NOT EXISTS (SELECT * FROM Enrollment WHERE StudentID = @StudentID AND CourseID = @CourseID)
+      BEGIN
+
+      INSERT INTO Enrollment
+      (StudentID, CourseID, EnrollmentDate)
+      VALUES (@StudentID, @CourseID, @CurrentDate);
+      
+      END;
+    `);
+
+    console.log(`Enrolled student (${dbRes.rowsAffected.length} rows affected)`);
+    res.sendStatus(200);
+  } catch (e) {
+    throw e;
+  }
+});
+
+// Unenroll a student in a course by students id and courses id
+router.post("/unenrollStudent", async (req, res) => {
+  try {
+    console.log("Unenrolling student...");
+
+    // Validate StudentID
+    if (Number.parseInt(req.body.StudentID) === NaN) {
+      throw new Error("INVALID REQUEST DATA");
+    }
+
+    // Validate CourseID
+    if (Number.parseInt(req.body.CourseID) === NaN) {
+      throw new Error("INVALID REQUEST DATA");
+    }
+
+    // Create new database request
+    const dbReq = new mssql.Request(req.app.locals.db);
+
+    // Set request input params
+    dbReq.input("StudentID", mssql.Int, req.body.StudentID);
+    dbReq.input("CourseID", mssql.Int, req.body.CourseID);
+
+    // Send delete query
+    const dbRes = await dbReq.query(`
+      DELETE FROM Enrollment 
+      WHERE StudentID = @StudentID AND CourseID = @CourseID
+    `);
+
+    console.log(`Added student (${dbRes.rowsAffected} rows affected)`);
+    res.sendStatus(200);
+  } catch (e) {
+    throw e;
+  }
+});
+
 // Add new student
 router.post("/addStudent", async (req, res) => {
   try {
