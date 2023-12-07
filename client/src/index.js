@@ -10,6 +10,9 @@ import "./index.css";
 // Routes
 import Root from "./routes/root";
 
+// Components
+import SideBar from "./components/sidebar";
+
 // Create router
 const router = createBrowserRouter([
   {
@@ -22,7 +25,13 @@ const router = createBrowserRouter([
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <div id="app" className="w-full h-full flex flex-row">
+      <SideBar />
+      
+      <div id="main">
+        <RouterProvider router={router} />
+      </div>
+    </div>
   </React.StrictMode>
 );
 
