@@ -12,6 +12,11 @@ import Main from "./layouts/main";
 
 // Routes
 import Root from "./routes/root";
+import Students from "./routes/students";
+import Courses from "./routes/courses";
+import Professors from "./routes/professors";
+import Deperatments from "./routes/departments";
+import Majors from "./routes/majors";
 
 // Create router
 const router = createBrowserRouter([
@@ -22,6 +27,26 @@ const router = createBrowserRouter([
       {
         index: true,
         element: <Root />,
+      },
+      {
+        path: "students/",
+        element: <Students />
+      },
+      {
+        path: "courses/",
+        element: <Courses />
+      },
+      {
+        path: "professors/",
+        element: <Professors />
+      },
+      {
+        path: "departments/",
+        element: <Deperatments />
+      },
+      {
+        path: "majors/",
+        element: <Majors />
       },
     ],
     errorElement: <h1 className="text-2xl">404: Page Not Found :(</h1>,
