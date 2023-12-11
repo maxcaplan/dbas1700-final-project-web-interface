@@ -7,17 +7,24 @@ import reportWebVitals from "./reportWebVitals";
 // CSS
 import "./index.css";
 
+// Layouts
+import Main from "./layouts/main";
+
 // Routes
 import Root from "./routes/root";
-
-// Components
-import SideBar from "./components/sidebar";
 
 // Create router
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <Root />,
+    element: <Main />,
+    children: [
+      {
+        index: true,
+        element: <Root />,
+      },
+    ],
+    errorElement: <h1 className="text-2xl">404: Page Not Found :(</h1>,
   },
 ]);
 
@@ -25,13 +32,7 @@ const router = createBrowserRouter([
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
-    <div id="app" className="w-full h-full flex flex-row">
-      <SideBar />
-      
-      <div id="main">
-        <RouterProvider router={router} />
-      </div>
-    </div>
+    <RouterProvider router={router} />
   </React.StrictMode>
 );
 
